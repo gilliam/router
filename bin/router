@@ -1,0 +1,3 @@
+#!/usr/bin/env python
+from xrouter import router
+router.main()
