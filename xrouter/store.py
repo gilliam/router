@@ -14,6 +14,7 @@
 
 import json
 
+import etcd
 from routes.route import Route as RoutesRoute
 
 from .util import EtcdWatcher
@@ -27,7 +28,7 @@ class Route(object):
             setattr(self, attr, None)
         self._update(kwargs)
         self._domain_route, self._path_route = None, None
-            
+
     def _update(self, kwargs):
         for attr in self.__attributes__:
             if attr in kwargs:
@@ -96,7 +97,7 @@ class RouteStoreQuery(_RouteStoreCommon):
     def __init__(self, client):
         self.client = client
         self._store = {}
-        self._watcher = EtcdWatcher(client, self.PREFIX, 
+        self._watcher = EtcdWatcher(client, self.PREFIX,
                                     self._handle_set,
                                     self._handle_delete)
         self.get = self._store.get
@@ -118,6 +119,8 @@ class RouteStoreQuery(_RouteStoreCommon):
     def _get_all_routes(self):
         try:
             keys_values = self.client.get_recursive(self.PREFIX)
+        except etcd.EtcdError:
+            keys_values = {}
         except ValueError:
             keys_values = {}
         for value in keys_values.itervalues():
